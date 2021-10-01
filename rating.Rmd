@@ -11,12 +11,12 @@ editor_options:
 ---
 
 ```{r setup, include=FALSE}
-library('tidyverse')
+library("tidyverse")
 library("tidymodels")
-library('kableExtra')
-options(digits=2)
+library("kableExtra")
+options(digits = 2)
 theme_set(theme_minimal())
-knitr::opts_chunk$set(echo=FALSE,message=F,warning=F,fig.pos = 'H',fig.align = 'center',fig.width=7.8, fig.height=4.85)
+knitr::opts_chunk$set(echo = FALSE, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 7.8, fig.height = 4.85)
 scale_fill_eu <- function(...) {
   ggplot2:::manual_scale(
     "fill",
@@ -43,18 +43,8 @@ Saga <- c(
   rep("Ilha dos Homens-Peixe", 58), rep("Aliança Pirata", 172),
   rep("Yonkou", nrow(df) + 1 - 747)
 )
-rate=read_csv("https://raw.githubusercontent.com/AlissonRP/OP_Rating/master/ONE%20PIECE.csv") %>% 
-  select(total_votes,average_rating)
-df <- df %>%
-  .[1:958,] %>% 
-  rename(numero_episodio = `#`, Titulo = Title, Tipo = Type) %>%
-  bind_cols(Saga= Saga[1:958],rate) %>% 
-  separate(Airdate,c("Lançamento")) %>% 
-  mutate(Lançamento=as.numeric(Lançamento))
-df$Saga <- factor(df$Saga, levels = c("East Blue", "Alabasta", "Skypiea", "Water 7", 
-                                          "Thriller Bark", "Guerra de Marineford",
-                                          "Ilha dos Homens-Peixe",
-                                          "Aliança Pirata","Yonkou"))
+
+
 #### FUNCTIONS------
 scale_fill_eu <- function(...) {
   ggplot2:::manual_scale(
@@ -67,18 +57,60 @@ scale_fill_eu <- function(...) {
 }
 scale_fill_discrete <- \(...) scale_fill_eu(...)
 
-page <- httr::GET(
-  paste0("https://www.ratingraph.com/show-episodes-list/17673/?draw=1&columns%5B0%5D%5Bdata%5D=trend&",
-         "columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=season&",
-         "columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=false&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=episode&",
-         "columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=false&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=name&",
-         "columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=false&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start&",
-         "columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=false&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=total_votes&",
-         "columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=false&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=average_rating&",
-         "columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=false&columns%5B6%5D%5Borderable%5D=true&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=1&",
-         "order%5B0%5D%5Bdir%5D=asc&order%5B1%5D%5Bcolumn%5D=2&order%5B1%5D%5Bdir%5D=asc&start=0&length=250&search%5Bvalue%5D=&search%5Bregex%5D=false&_=", Sys.time() %>% as.numeric() %>% paste0("000")))
-table <- page %>% httr::content(as = 'parsed')
-avg_ratings <- sapply(table$data, `[[`, 'average_rating') %>% as.numeric()
+page <- function(st) {
+  httr::GET(
+    paste0(paste0(
+      "https://www.ratingraph.com/show-episodes-list/17673/?draw=1&columns%5B0%5D%5Bdata%5D=trend&",
+      "columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=season&",
+      "columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=false&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=episode&",
+      "columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=false&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=name&",
+      "columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=false&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start&",
+      "columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=false&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=total_votes&",
+      "columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=false&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=average_rating&",
+      "columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=false&columns%5B6%5D%5Borderable%5D=true&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=1&",
+      "order%5B0%5D%5Bdir%5D=asc&order%5B1%5D%5Bcolumn%5D=2&order%5B1%5D%5Bdir%5D=asc&start=", st, "&length=250&search%5Bvalue%5D=&search%5Bregex%5D=false&_="
+    ), Sys.time() %>% as.numeric() %>% paste0("000"))
+  )
+}
+
+avg <- function(start) {
+  page(start) %>%
+    httr::content(as = "parsed") %>%
+    .$data %>%
+    sapply(`[[`, "average_rating") %>%
+    as.numeric()
+}
+tot <- function(start) {
+  page(start) %>%
+    httr::content(as = "parsed") %>%
+    .$data %>%
+    sapply(`[[`, "total_votes") %>%
+    gsub(pattern = ",", replacement = "", x = ., fixed = TRUE) %>%
+    as.numeric()
+}
+avg250 <- avg(0)
+avg500 <- avg(250)
+avg750 <- avg(500)
+avg1000 <- avg(750)
+avg_rating <- c(avg(0), avg(250), avg(500), avg(750))
+total_votes <- c(tot(0), tot(250), tot(500), tot(750))
+
+
+
+
+df=df %>%
+  .[1:length(avg_rating), ] %>% 
+  rename(numero_episodio = `#`, Titulo = Title, Tipo = Type) %>%
+  bind_cols(Saga = Saga[length(avg_rating)], rate = avg_rating, votes = total_votes) %>% 
+separate(Airdate, c("Lançamento")) %>%
+  mutate(Lançamento = as.numeric(Lançamento))
+
+df$Saga <- factor(df$Saga, levels = c(
+  "East Blue", "Alabasta", "Skypiea", "Water 7",
+  "Thriller Bark", "Guerra de Marineford",
+  "Ilha dos Homens-Peixe",
+  "Aliança Pirata", "Yonkou"
+))
 ```
 
 ## Introdução
@@ -86,15 +118,11 @@ avg_ratings <- sapply(table$data, `[[`, 'average_rating') %>% as.numeric()
 One piece é até o momento   o anime com maior duração (`r max(df$Lançamento)-min(df$Lançamento) +1 ` Anos), inclusive sendo mais velho que o autor vos escreve. Nesse breve ensaio veremos como a obra (anime) se comporta em relação a quantidade de episódios postados por ano, tipos de episódios, e avaliação pelos fãs.
 
 ## O Tempo passa e Luffy segue em frente
-Veja que são 23 anos de história, e mesmo assim a quantidade de episódios postadas por ano tem pouca variação:
+Veja que são 23 anos de história, e mesmo assim a quantidade de episódios postados por ano tem pouca variação:
 ```{r anoep}
-plotly::ggplotly(df %>% 
-  group_by(Lançamento) %>% 
-  summarise(total=n()) %>% 
-  ggplot(aes(Lançamento,total))+
-  geom_bar(stat="identity"))
+plotly::ggplotly(df %>%
+  group_by(Lançamento) %>%
+  summarise(total = n()) %>%
+  ggplot(aes(Lançamento, total)) +
+  geom_bar(stat = "identity"))
 ```
-
-
-
-
