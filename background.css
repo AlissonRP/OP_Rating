@@ -3,9 +3,13 @@ div.main-container {
 }
 
 body {
-  background-image: url('https://images4.alphacoders.com/711/711367.jpg');
+  background-image: url('https://media.giphy.com/media/JXHhI4o9NCf8k/giphy.gif');
   background-repeat: no-repeat;
   background-size: cover;
+  
+  height: 100vh;
+    padding:0;
+    margin:0;
 }
 
 div {
