@@ -6,6 +6,13 @@ header-includes:
 geometry: margin=2cm
 output: 
   bookdown::html_document2:
+     toc: true
+     toc_float: true
+     toc_depth: 3
+     number_sections: false
+     css: background.css
+     includes:
+      in_header: "fav.html"
 editor_options:
   chunk_output_type: console
 
