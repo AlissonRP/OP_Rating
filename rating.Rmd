@@ -8,7 +8,6 @@ output:
   bookdown::html_document2:
      toc: true
      toc_float: true
-     toc_depth: 3
      number_sections: false
      css: background.css
      includes:
@@ -126,11 +125,12 @@ g=\(...) plotly::ggplotly(...)
 
 ## EM CONSTRUÇÃO
 
-One piece é até o momento  o anime com maior duração (`r max(df$Lançamento)-min(df$Lançamento) +1 ` Anos), inclusive sendo mais velho que o autor vos escreve. Nesse breve ensaio veremos como a obra (anime) se comporta em relação a quantidade de episódios postados por ano, tipos de episódios, e avaliação pelos fãs.
+One piece é até o momento  o anime com maior duração (`r max(df$Lançamento)-min(df$Lançamento) ` Anos), inclusive sendo mais velho que o autor vos escreve. Nesse breve ensaio veremos como a obra (anime) se comporta em relação a quantidade de episódios postados por ano, tipos de episódios, e avaliação pelos fãs.
 
-## O Tempo passa e Luffy segue em frente
-Veja que são 23 anos de história, e mesmo assim a quantidade de episódios postados por ano tem pouca variação:
-![](https://media.giphy.com/media/SJXzadwbexJEAZ9S1B/giphy.gif)
+## O Tempo passa e Luffy segue em frente 
+![](https://media.giphy.com/media/SJXzadwbexJEAZ9S1B/giphy.gif){width=33%}
+Veja que são `r max(df$Lançamento)-min(df$Lançamento)` anos de história, e mesmo assim a quantidade de episódios postados por ano tem pouca variação:
+
 ```{r anoep}
 g(df %>%
   group_by(Lançamento) %>%
@@ -176,6 +176,7 @@ g(df %>%
   labs(y="",x="Avaliação média dos usuarios")+
      coord_flip())
 ```
-
+Você pode acessar os fillers por saga [aqui](https://alissonrp.shinyapps.io/op_beta/)
+  
 
 
