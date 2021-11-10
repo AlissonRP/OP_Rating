@@ -20,7 +20,6 @@ editor_options:
 
 ```{r setup, include=FALSE}
 library("tidyverse")
-library("tidymodels")
 library("kableExtra")
 options(digits = 2)
 theme_set(theme_minimal())
@@ -128,7 +127,7 @@ g=\(...) plotly::ggplotly(...)
 One piece é até o momento  o anime com maior duração (`r max(df$Lançamento)-min(df$Lançamento) ` Anos), inclusive sendo mais velho que o autor vos escreve. Nesse breve ensaio veremos como a obra (anime) se comporta em relação a quantidade de episódios postados por ano, tipos de episódios, e avaliação pelos fãs.
 
 ## O Tempo passa e Luffy segue em frente 
-![](https://media.giphy.com/media/SJXzadwbexJEAZ9S1B/giphy.gif){width=33%}
+
 Veja que são `r max(df$Lançamento)-min(df$Lançamento)` anos de história, e mesmo assim a quantidade de episódios postados por ano tem pouca variação:
 
 ```{r anoep}
@@ -141,7 +140,10 @@ g(df %>%
 
 
 ```
-Em relação a avaliação média dos usuarios no site lllll mantem-se sempre acima de 7.5 em todos os arcos, tem-se como destaque  marineford e o arco Whole Cake
+
+## Avaliação
+### Avaliação por arco
+Em relação a avaliação média dos usuarios no site [Rating Graph](https://www.ratingraph.com/tv-shows/one-piece-ratings-17673/) mantem-se sempre acima de 7.5 em todos os arcos, tem-se como destaque  arco Marineford e o  Wano 
 ```{r rate}
 g(df %>%
   group_by(Saga) %>%
@@ -153,7 +155,7 @@ g(df %>%
 ```
 
 
-## Avaliação por arco
+### Avaliação dos episódios por arco
 
 ```{r}
 
@@ -164,7 +166,22 @@ g(df %>%
     coord_flip()+
     labs(x=""))
 ```
-É fácil notar que os fillers possuem notar inferior aos episódios canonicos, em geral veja a avaliação média de cada tipo de episódio
+É fácil notar que os fillers possuem notar inferior aos episódios canonicos, em geral, veja a avaliação média de cada tipo de episódio
+
+### Avaliação dos fillers por arco
+Em termos de avaliação do fãs, já sabemos que os episódios fillers são os que a galera menos gosta, mas dentre os fillers, que são os com menor avaliação? É o que veremos nessa subseção.
+
+```{r,include=FALSE}
+df %>% 
+  filter(Tipo=="Filler") %>% 
+  arrange((rate))
+```
+
+
+```{r,include=FALSE}
+df %>% 
+  arrange(desc(rate))
+```
 
 
 ```{r}
