@@ -6,22 +6,38 @@ body {
   background-image: url('https://media.giphy.com/media/3oEdvaxmd15YTHy6Uo/giphy.gif');
   background-repeat: no-repeat;
   background-size: cover;
+  font-size: 13pt;
+  
   
   height: 100vh;
     padding:0;
     margin:0;
 }
 
+
+
 div {
-  background-color: rgba(255, 255, 255, 0.45)   /;
+  background-color: rgba(255, 255, 255, 0.45)   ;
   padding: 0.85em;
 }
 
 #TOC {
-  left: 30px;
-  margin: 20px 0px 25px 0px;
+  background: url("https://occ-0-2794-2219.1.nflxso.net/dnm/api/v6/LmEnxtiAuzezXBjYXPuDgfZ4zZQ/AAAABdPChfCEFiD521b1XCoFfvQlx9F1no-tUHM5SFJ0s9bFxk1GyIkjeZSM60x-CfbcNTPr0TeSnSWt44udge1B-KKTlo8tXsMGcGhW.png?r=74a");
+  background-size: contain;
+  padding-top: 120px !important;
+  background-repeat: no-repeat;
 }
 
-.main-container {
-    margin-left: 200px;
+
+
+
+h1,h2{
+  font-size: 19pt;
+}
+
+h3,h4,h5,h6{
+  font-size: 15pt;
+}
+h1, h2, h3 {
+   text-align: center;
 }
