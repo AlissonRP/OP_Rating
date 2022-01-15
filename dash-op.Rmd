@@ -9,7 +9,7 @@ output:
     vertical_layout: fill
 ---
 
-<style type="text/css"> .sidebar { overflow: auto; } </style>
+
 
 ```{r setup, include=FALSE}
 library("tidyverse")
@@ -21,7 +21,7 @@ scale_fill_eu <- function(...) {
   ggplot2:::manual_scale(
     "fill",
     values = setNames(
-      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(data$Tipo)),
+      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(data$Type)),
       ...
     )
   )
@@ -48,7 +48,7 @@ scale_fill_eu <- function(...) {
   ggplot2:::manual_scale(
     "fill",
     values = setNames(
-      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(df$Tipo)),
+      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(df$Type)),
       ...
     )
   )
@@ -95,10 +95,10 @@ total_votes <- c(tot(0), tot(250), tot(500), tot(750),tot(1000))
 
 df=df %>%
   .[1:length(avg_rating), ] %>% 
-  rename(numero_episodio = `#`, Titulo = Title, Tipo = Type) %>%
-  bind_cols(Saga = Saga[1:length(avg_rating)], rate = avg_rating, votes = total_votes) |> 
+  rename(Number_ep = `#`) %>%
+  bind_cols(Saga = Saga[1:length(avg_rating)], Rate = avg_rating,total_votes=total_votes) |> 
   separate(Airdate, c("Year","Month")) %>%
- mutate(Year = as.numeric(Year),Tipo=as.factor(Tipo))
+ mutate(Year = as.numeric(Year),Type=as.factor(Type))
 
 df$Saga <- factor(df$Saga, levels = c(
   "East Blue", "Alabasta", "Skypiea", "Water 7",
@@ -107,6 +107,8 @@ df$Saga <- factor(df$Saga, levels = c(
 ))
 g=\(...) plotly::ggplotly(...)
 htmltools::tagList(fontawesome::fa_html_dependency())
+
+
 ```
 
 ```{css info-style, echo = FALSE}
@@ -118,8 +120,9 @@ htmltools::tagList(fontawesome::fa_html_dependency())
 Ao longo do tempo
 ================================================================
 
-Column {.tabset}
+Column {data-width=600} 
 -------------------------------------
+ 
 
 ### Ano
 
@@ -134,22 +137,11 @@ g(df %>%
 
 
 ```
-
-### Meses
-
-```{r}
-g(df %>%
-  group_by(Month) %>%
-  summarise(total = n()) %>%
-  ggplot() +
-  geom_bar(aes(Month,total,fill=as.numeric(Month)),stat = "identity")+
-    theme(legend.position="none"))
-```
-
-Column {data-width=40}
+Column {data-width=400}
 -------------------------------------
 
 ###
+
 
 ```{r}
 # Destaque com maior avaliação média
@@ -172,6 +164,20 @@ df %>% group_by(Year) %>% summarise(total=n()) |> filter(Year!=1999,Year!=2022) 
   )
 ```
 
+### Meses
+
+```{r}
+g(df %>%
+  group_by(Month) %>%
+  summarise(total = n()) %>%
+  ggplot() +
+  geom_bar(aes(Month,total,fill=as.numeric(Month)),stat = "identity")+
+    theme(legend.position="none"))
+```
+
+
+
+
 
 
 
@@ -192,9 +198,9 @@ Column {.tabset}
 ```{r}
 
 df |> 
-  dplyr::group_by(Tipo) |> 
+  dplyr::group_by(Type) |> 
   dplyr::count() |> 
-  rename(Quantidade=n) |> 
+  rename(Quantity=n) |> 
   mypdf1::pdf1_tbl("Quantidade por tipo de episódio")
 ```
 
@@ -203,13 +209,12 @@ df |>
 ```{r}
 
 g(df %>%
-    group_by(Tipo) %>%
-    summarise(mean=mean(rate)) %>% 
-    ggplot(aes(mean, fct_reorder(as.factor(Tipo),mean),fill=Tipo)) +
+    group_by(Type) %>%
+    summarise(mean=mean(Rate)) %>% 
+    ggplot(aes(mean,Type,fill=Type)) +
   geom_bar(stat = "identity")+
-  labs(y="",x="Avaliação média dos usuarios")+
+  labs(y="",x="Mean Rate")+
      coord_flip())
-
 ```
 
 Column {data-width=90}
@@ -219,7 +224,7 @@ Column {data-width=90}
 ```{r}
 # Destaque com menor avaliação média
 df |> 
-  mypdf1::pdf1_freq.tbl(Tipo) |> (\(x) x[3,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%")  |> 
+  mypdf1::pdf1_freq.tbl(Type) |> (\(x) x[3,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%")  |> 
   flexdashboard::valueBox(
     caption="Canonical Episodes",
     icon="ion-android-checkmark-circle"
@@ -233,7 +238,7 @@ df |>
 ```{r}
 # Destaque com menor avaliação média
 df |> 
-  mypdf1::pdf1_freq.tbl(Tipo) |> (\(x) x[2,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%") |>  
+  mypdf1::pdf1_freq.tbl(Type) |> (\(x) x[2,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%") |>  
   flexdashboard::valueBox(
     caption="Fillers Episodes",
     icon="ion-android-close"
@@ -253,10 +258,10 @@ Column {.tabset}
 ### Rating by Saga
 
 ```{r}
-m=rep(mean(df$rate),nrow(df)) 
+
 g(df %>%
   group_by(Saga) %>%
-  summarise(mean=mean(rate),dp=sd(rate),votes=sum(votes)) %>% 
+  summarise(mean=mean(Rate),dp=sd(Rate),votes=sum(total_votes)) %>% 
    ggplot(aes(mean, fct_reorder(as.factor(Saga),mean),fill=mean)) +
   geom_bar(stat = "identity")+
     scale_fill_gradient(low = "#E8EE11", high = "#4711EE", na.value = NA)+
@@ -266,14 +271,27 @@ g(df %>%
 
 ```
 
+###
+
+```{r}
+ df %>% group_by(Saga) %>%summarise(mean=mean(Rate)) |>filter(mean==max(mean)) |> select(Saga) |> 
+  flexdashboard::valueBox(
+    caption="Greatest Rating",
+    icon="ion-android-favorite"
+  )
+  
+```
+###
+
 ### Rating by Episodes
+
 
 ```{r}
 g(df %>% 
-  ggplot(aes(l1=votes,l2=numero_episodio))+
-  geom_point(aes(Saga,rate,color = Tipo))+
-    geom_hline(yintercept = mean(df$rate), color="#F91414")+
-    ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#4711EE", "#383745", "#42B81D", "#E8EE11"))+
+  ggplot(aes(l1=total_votes,l2=Number_ep))+
+  geom_point(aes(Saga,Rate,color = Type))+
+    geom_hline(yintercept = mean(df$Rate), color="#F91414")+
+    ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Type))), values = c("#4711EE", "#383745", "#42B81D", "#E8EE11"))+
     coord_flip()+
     labs(x="",y="Avaliação")+
     annotate("text", x = 8, y = 8.4, label = "Média")
@@ -284,7 +302,7 @@ Column {data-width=40}
 -------------------------------------
 ###
 ```{r}
-df |> filter(rate==max(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |> 
+df |> filter(Rate==max(df$Rate)) |> select(Number_ep) |> (\(x) x[1,])() |> 
   flexdashboard::valueBox(
     caption="Greatest Rating",
     icon="ion-android-favorite"
@@ -295,7 +313,7 @@ df |> filter(rate==max(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |>
 
 ###
 ```{r}
-df |> filter(rate==min(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |> 
+df |> filter(Rate==min(df$Rate)) |> select(Number_ep) |> (\(x) x[1,])() |> 
   flexdashboard::valueBox(
     caption="Lowest Rating",
     icon="ion-android-sad"
@@ -303,3 +321,7 @@ df |> filter(rate==min(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |>
   
 ```
 
+### Note
+
+
+*Title of `r df |> filter(Rate==min(df$Rate)) |> select(Number_ep) |> (\(x) x[1,])()`: `r df |> filter(Rate==min(df$Rate)) |> select(Title) |> (\(x) x[1,])()`  *
