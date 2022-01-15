@@ -1,0 +1,305 @@
+---
+title: "One Piece"
+output: 
+  flexdashboard::flex_dashboard:
+    includes:
+      in_header: "fav.html"
+    source_code: embed
+    orientation: columns
+    vertical_layout: fill
+---
+
+<style type="text/css"> .sidebar { overflow: auto; } </style>
+
+```{r setup, include=FALSE}
+library("tidyverse")
+library("kableExtra")
+options(digits = 2)
+theme_set(theme_minimal())
+knitr::opts_chunk$set(echo = F, message = F, warning = F, fig.pos = "H", fig.align = "center", fig.width = 5.5, fig.height = 4.85)
+scale_fill_eu <- function(...) {
+  ggplot2:::manual_scale(
+    "fill",
+    values = setNames(
+      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(data$Tipo)),
+      ...
+    )
+  )
+}
+scale_fill_discrete <- \(...) scale_fill_eu(...)
+df <- "https://www.animefillerlist.com/shows/one-piece" %>%
+  rvest::read_html() %>%
+  rvest::html_node(xpath = '//*[@id="node-19"]/div[3]/table') %>%
+  rvest::html_table()
+#----
+Saga <- c(
+  rep("East Blue", 61), rep("Alabasta", 70),
+  rep("Skypiea", 71), rep("Water 7", 119),
+  rep("Thriller Bark", 59), rep("Arquipélago de Sabaody",40),
+   rep("Impel Down",35),rep("Marineford",36), rep("Pós Guerra",24),
+  rep("Ilha dos Homens-Peixe", 62), rep("Punk Hazard", 50),rep("Dressrosa", 118),
+  rep("Zou", 36),rep("Whole Cake", 95),
+  rep("Wano", nrow(df) + 1 - 877)
+)
+
+
+#### FUNCTIONS------
+scale_fill_eu <- function(...) {
+  ggplot2:::manual_scale(
+    "fill",
+    values = setNames(
+      c("#4711EE", "#383745", "#42B81D", "#E8EE11"), levels(as.factor(df$Tipo)),
+      ...
+    )
+  )
+}
+scale_fill_discrete <- \(...) scale_fill_eu(...)
+
+page <- function(st) {
+  httr::GET(
+    paste0(paste0(
+      "https://www.ratingraph.com/show-episodes-list/17673/?draw=1&columns%5B0%5D%5Bdata%5D=trend&",
+      "columns%5B0%5D%5Bname%5D=&columns%5B0%5D%5Bsearchable%5D=false&columns%5B0%5D%5Borderable%5D=true&columns%5B0%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B0%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B1%5D%5Bdata%5D=season&",
+      "columns%5B1%5D%5Bname%5D=&columns%5B1%5D%5Bsearchable%5D=false&columns%5B1%5D%5Borderable%5D=true&columns%5B1%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B1%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B2%5D%5Bdata%5D=episode&",
+      "columns%5B2%5D%5Bname%5D=&columns%5B2%5D%5Bsearchable%5D=false&columns%5B2%5D%5Borderable%5D=true&columns%5B2%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B2%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B3%5D%5Bdata%5D=name&",
+      "columns%5B3%5D%5Bname%5D=&columns%5B3%5D%5Bsearchable%5D=false&columns%5B3%5D%5Borderable%5D=true&columns%5B3%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B3%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B4%5D%5Bdata%5D=start&",
+      "columns%5B4%5D%5Bname%5D=&columns%5B4%5D%5Bsearchable%5D=false&columns%5B4%5D%5Borderable%5D=true&columns%5B4%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B4%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B5%5D%5Bdata%5D=total_votes&",
+      "columns%5B5%5D%5Bname%5D=&columns%5B5%5D%5Bsearchable%5D=false&columns%5B5%5D%5Borderable%5D=true&columns%5B5%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B5%5D%5Bsearch%5D%5Bregex%5D=false&columns%5B6%5D%5Bdata%5D=average_rating&",
+      "columns%5B6%5D%5Bname%5D=&columns%5B6%5D%5Bsearchable%5D=false&columns%5B6%5D%5Borderable%5D=true&columns%5B6%5D%5Bsearch%5D%5Bvalue%5D=&columns%5B6%5D%5Bsearch%5D%5Bregex%5D=false&order%5B0%5D%5Bcolumn%5D=1&",
+      "order%5B0%5D%5Bdir%5D=asc&order%5B1%5D%5Bcolumn%5D=2&order%5B1%5D%5Bdir%5D=asc&start=", st, "&length=250&search%5Bvalue%5D=&search%5Bregex%5D=false&_="
+    ), Sys.time() %>% as.numeric() %>% paste0("000"))
+  )
+}
+
+avg <- function(start) {
+  page(start) %>%
+    httr::content(as = "parsed") %>%
+    .$data %>%
+    sapply(`[[`, "average_rating") %>%
+    as.numeric()
+}
+tot <- function(start) {
+  page(start) %>%
+    httr::content(as = "parsed") %>%
+    .$data %>%
+    sapply(`[[`, "total_votes") %>%
+    gsub(pattern = ",", replacement = "", x = ., fixed = TRUE) %>%
+    as.numeric()
+}
+
+avg_rating <- c(avg(0), avg(250), avg(500), avg(750),avg(1000))
+total_votes <- c(tot(0), tot(250), tot(500), tot(750),tot(1000))
+
+
+
+
+df=df %>%
+  .[1:length(avg_rating), ] %>% 
+  rename(numero_episodio = `#`, Titulo = Title, Tipo = Type) %>%
+  bind_cols(Saga = Saga[1:length(avg_rating)], rate = avg_rating, votes = total_votes) |> 
+  separate(Airdate, c("Year","Month")) %>%
+ mutate(Year = as.numeric(Year),Tipo=as.factor(Tipo))
+
+df$Saga <- factor(df$Saga, levels = c(
+  "East Blue", "Alabasta", "Skypiea", "Water 7",
+  "Thriller Bark", "Arquipélago de Sabaody","Impel Down","Marineford","Pós Guerra",
+  "Ilha dos Homens-Peixe","Punk Hazard","Dressrosa","Zou","Whole Cake","Wano"
+))
+g=\(...) plotly::ggplotly(...)
+htmltools::tagList(fontawesome::fa_html_dependency())
+```
+
+```{css info-style, echo = FALSE}
+  .chart-shim {
+    overflow-y: scroll;
+    }
+```
+
+Ao longo do tempo
+================================================================
+
+Column {.tabset}
+-------------------------------------
+
+### Ano
+
+```{r}
+g(df %>%
+  group_by(Year) %>%
+  summarise(total = n()) %>%
+  ggplot() +
+  geom_bar(aes(Year, total,fill=Year),stat = "identity")+
+   scale_fill_gradient(low = "#E8EE11", high = "#4711EE", na.value = NA)+
+    theme(legend.position="none"))
+
+
+```
+
+### Meses
+
+```{r}
+g(df %>%
+  group_by(Month) %>%
+  summarise(total = n()) %>%
+  ggplot() +
+  geom_bar(aes(Month,total,fill=as.numeric(Month)),stat = "identity")+
+    theme(legend.position="none"))
+```
+
+Column {data-width=40}
+-------------------------------------
+
+###
+
+```{r}
+# Destaque com maior avaliação média
+df %>% group_by(Year) %>% summarise(total=n()) |> filter(total==max(total)) |> select(Year) |> 
+  flexdashboard::valueBox(
+    caption="Ano com mais lançamento de episódios",
+    icon="ion-ios-arrow-thin-up"
+  )
+
+```
+
+###
+
+```{r}
+# Destaque com menor avaliação média
+df %>% group_by(Year) %>% summarise(total=n()) |> filter(Year!=1999,Year!=2022) |> filter(total==min(total)) |> select(Year) |> 
+  flexdashboard::valueBox(
+    caption="Ano com menor lançamento de episódios",
+    icon="ion-ios-arrow-thin-down"
+  )
+```
+
+
+
+
+
+### Note
+
+Release year and current year have been removed for minor/major calculations ;
+* **Last updated on  `r format(Sys.Date(), '%d/%m/%y')` às `r format(Sys.time(), '%R')` BRT.**
+
+Type os Episodes
+================================================================
+
+Column {.tabset}
+-------------------------------------
+
+### Type of episodes
+
+```{r}
+# Mortes diarias de sorocaba com media movel de 7 e 14 dias
+df |> 
+  dplyr::group_by(Tipo) |> 
+  dplyr::count() |> 
+  rename(Quantidade=n) |> 
+  mypdf1::pdf1_tbl("Quantidade por tipo de episódio")
+```
+
+
+
+```{r}
+
+g(df %>%
+    group_by(Tipo) %>%
+    summarise(mean=mean(rate)) %>% 
+    ggplot(aes(mean, fct_reorder(as.factor(Tipo),mean),fill=Tipo)) +
+  geom_bar(stat = "identity")+
+  labs(y="",x="Avaliação média dos usuarios")+
+     coord_flip())
+
+```
+
+Column {data-width=90}
+-------------------------------------
+
+###
+```{r}
+# Destaque com menor avaliação média
+df |> 
+  mypdf1::pdf1_freq.tbl(Tipo) |> (\(x) x[3,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%")  |> 
+  flexdashboard::valueBox(
+    caption="Canonical Episodes",
+    icon="ion-android-checkmark-circle"
+  )
+```
+
+
+
+###
+
+```{r}
+# Destaque com menor avaliação média
+df |> 
+  mypdf1::pdf1_freq.tbl(Tipo) |> (\(x) x[2,3])() |>  round(2) |> (\(x) x*100)() |> paste0("%") |>  
+  flexdashboard::valueBox(
+    caption="Fillers Episodes",
+    icon="ion-android-close"
+  )
+```
+
+
+
+
+
+Rating
+================================================================
+
+Column {.tabset}
+-------------------------------------
+
+### Rating by Saga
+
+```{r}
+m=rep(mean(df$rate),nrow(df)) 
+g(df %>%
+  group_by(Saga) %>%
+  summarise(mean=mean(rate),dp=sd(rate),votes=sum(votes)) %>% 
+   ggplot(aes(mean, fct_reorder(as.factor(Saga),mean),fill=mean)) +
+  geom_bar(stat = "identity")+
+    scale_fill_gradient(low = "#E8EE11", high = "#4711EE", na.value = NA)+
+    theme(legend.position="none")+
+  labs(y="",x="Avaliação média dos usuarios"))
+
+
+```
+
+### Rating by Episodes
+
+```{r}
+g(df %>% 
+  ggplot(aes(l1=votes,l2=numero_episodio))+
+  geom_point(aes(Saga,rate,color = Tipo))+
+    geom_hline(yintercept = mean(df$rate), color="#F91414")+
+    ggplot2::scale_color_manual(breaks = c(levels(as.factor(df$Tipo))), values = c("#4711EE", "#383745", "#42B81D", "#E8EE11"))+
+    coord_flip()+
+    labs(x="",y="Avaliação")+
+    annotate("text", x = 8, y = 8.4, label = "Média")
+    )
+```
+
+Column {data-width=40}
+-------------------------------------
+###
+```{r}
+df |> filter(rate==max(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |> 
+  flexdashboard::valueBox(
+    caption="Greatest Rating",
+    icon="ion-android-favorite"
+  )
+  
+```
+
+
+###
+```{r}
+df |> filter(rate==min(df$rate)) |> select(Titulo) |> (\(x) x[1,])() |> 
+  flexdashboard::valueBox(
+    caption="Lowest Rating",
+    icon="ion-android-sad"
+  )
+  
+```
+
