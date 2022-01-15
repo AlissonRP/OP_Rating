@@ -190,7 +190,7 @@ Column {.tabset}
 ### Type of episodes
 
 ```{r}
-# Mortes diarias de sorocaba com media movel de 7 e 14 dias
+
 df |> 
   dplyr::group_by(Tipo) |> 
   dplyr::count() |> 
